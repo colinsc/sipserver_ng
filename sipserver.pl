@@ -304,6 +304,7 @@ sub read_request {
     # proper SPEC: (octal) \015 = (hex) x0D = (dec) 13 = (ascii) carriage return
     my $buffer = <STDIN>;
     if ( defined $buffer ) {
+        STDIN->flush(); # clear an extra linefeed
         chomp $buffer;
         syslog( "LOG_INFO", "read_SIP_packet, INPUT MSG: '$buffer'" );
         $raw_length = length $buffer;
