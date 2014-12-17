@@ -272,28 +272,43 @@ sub sip_protocol_loop {
     #
     # In short, we'll take any valid message here.
     #my $expect = SC_STATUS;
-    while (1) {
-        my $input = read_request();
-        if ( !defined $input ) {
-            return;    # EOF
-        }
+    eval {
+        local $SIG{ALRM} = sub {
+            syslog( 'LOG_DEBUG', "Inactive timed out" );
+            die "Timed Out!\n";
+        };
+        my $timeout = 600;    # 10 mins
 
-        unless ($input) {
-            syslog( "LOG_ERR", "sip_protocol_loop: empty input skipped" );
-            print("96$CR");
-            next;
-        }
+        my $previous_alarm = alarm($timeout);
 
-        # end cheap input hacks
-        my $status = Sip::MsgType::handle( $input, $self, q{} );
-        if ( !$status ) {
-            syslog(
-                "LOG_ERR",
-                "sip_protocol_loop: failed to handle %s",
-                substr( $input, 0, 2 )
-            );
+        while (1) {
+            my $input = read_request();
+            if ( !defined $input ) {
+                return;       # EOF
+            }
+            alarm($timeout);
+
+            unless ($input) {
+                syslog( "LOG_ERR", "sip_protocol_loop: empty input skipped" );
+                print("96$CR");
+                next;
+            }
+
+            # end cheap input hacks
+            my $status = Sip::MsgType::handle( $input, $self, q{} );
+            if ( !$status ) {
+                syslog(
+                    "LOG_ERR",
+                    "sip_protocol_loop: failed to handle %s",
+                    substr( $input, 0, 2 )
+                );
+            }
+            next if $status eq REQUEST_ACS_RESEND;
         }
-        next if $status eq REQUEST_ACS_RESEND;
+        alarm($previous_alarm);
+    };
+    if ( $@ =~ m/timed out/i ) {
+        return;
     }
 }
 
@@ -304,7 +319,7 @@ sub read_request {
     # proper SPEC: (octal) \015 = (hex) x0D = (dec) 13 = (ascii) carriage return
     my $buffer = <STDIN>;
     if ( defined $buffer ) {
-        STDIN->flush(); # clear an extra linefeed
+        STDIN->flush();    # clear an extra linefeed
         chomp $buffer;
         syslog( "LOG_INFO", "read_SIP_packet, INPUT MSG: '$buffer'" );
         $raw_length = length $buffer;
