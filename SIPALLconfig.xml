@@ -1,0 +1,69 @@
+<acsconfig xmlns="http://openncip.org/acs-config/1.0/">
+<!-- above address gets nothing, it's just a namespace -->
+  <error-detect enabled="true" />
+
+<!--
+  Set Net::Server::PreFork runtime parameters 
+  syslog_ident will identify SIP2 Koha server entries in syslog
+  For OpenSolaris, add: syslog_logsock=stream
+-->
+  <server-params
+    log_file='Sys::Syslog'
+    syslog_ident='koha_sip'
+    syslog_facility='local6'
+    pid_file='/home/cc/koha-dev/var/run/sipserver.pid'
+    user='cc'
+    group='cc'
+    setsid="1"
+  />
+  
+  <listeners>
+    <service
+      port="6001/tcp"
+      transport="RAW" 
+      protocol="SIP/2.00"
+      timeout="60" />
+    <service
+      port="6002/tcp"
+      transport="RAW" 
+      protocol="SIP/2.00"
+      timeout="60" />
+    <service
+      port="6004/tcp"
+      transport="RAW" 
+      protocol="SIP/2.00"
+      timeout="60" />
+    <service
+      port="6003/tcp"
+      transport="telnet" 
+      protocol="SIP/2.00"
+      timeout="60" />
+  </listeners>
+
+  <accounts>
+      <login id="SIPTEST"  password="SIPK1" delimiter="|" error-detect="enabled" institution="CPL" />
+      <login id="sipuser"  password="SIPK2" delimiter="|" error-detect="enabled" institution="MPL" />
+  </accounts>
+
+<!--
+Institution tags are for enabled branches.  There needs to be one
+institution stanza for each institution named in the accounts above.
+The implementation attribute is actually used to find the code to run,
+in our case "ILS".
+-->
+
+<institutions>
+    <institution id="CPL" implementation="ILS" parms="">
+          <policy checkin="true" renewal="true" checkout="true"
+	  	  status_update="false" offline="false"
+		  timeout="25"
+	  	  retries="5" />
+    </institution>
+    <institution id="MPL" implementation="ILS" parms="">
+          <policy checkin="true" renewal="true" checkout="true"
+	  	  status_update="false" offline="false"
+		  timeout="25"
+	  	  retries="5" />
+    </institution>
+</institutions>
+</acsconfig>
