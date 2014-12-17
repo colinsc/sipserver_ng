@@ -281,31 +281,31 @@ sub sip_protocol_loop {
 
         my $previous_alarm = alarm($timeout);
 
-        while (1) {
-            my $input = read_request();
-            if ( !defined $input ) {
+        while ( my $inputbuf = read_request() ) {
+            if ( !defined $inputbuf ) {
                 return;       # EOF
             }
             alarm($timeout);
 
-            unless ($input) {
+            unless ($inputbuf) {
                 syslog( "LOG_ERR", "sip_protocol_loop: empty input skipped" );
                 print("96$CR");
                 next;
             }
 
             # end cheap input hacks
-            my $status = Sip::MsgType::handle( $input, $self, q{} );
+            my $status = Sip::MsgType::handle( $inputbuf, $self, q{} );
             if ( !$status ) {
                 syslog(
                     "LOG_ERR",
                     "sip_protocol_loop: failed to handle %s",
-                    substr( $input, 0, 2 )
+                    substr( $inputbuf, 0, 2 )
                 );
             }
             next if $status eq REQUEST_ACS_RESEND;
         }
         alarm($previous_alarm);
+        return;
     };
     if ( $@ =~ m/timed out/i ) {
         return;
