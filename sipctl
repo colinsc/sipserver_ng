@@ -6,14 +6,16 @@ my $cmd = shift;
 
 my @params = @ARGV;
 
+$ENV{KOHA_CONF} ||= '/home/koha/koha-dev/etc/koha-conf.xml';
+$ENV{PERL5LIB}  ||= '/home/koha/kohaclone';
 
 my %function = (
-    start => \&start_listener,
-    stop => \&stop_listener,
+    start   => \&start_listener,
+    stop    => \&stop_listener,
     restart => \&restart_listener,
 );
 
-if ( !exists $function{$cmd}) {
+if ( !exists $function{$cmd} ) {
     print STDERR "Unrecognised command\n";
     exit(1);
 }
@@ -24,20 +26,20 @@ if (@params) {
 
 }
 
-my $program = 'sipserver.pl';
-my $piddir = '/home/koha/koha-dev/var/run';
-my $bindir='/home/koha/kohaclone/C4/SIP';
-my $config_dir='/home/koha/kohaclone/C4/SIP';
-my $server = join q{/}, $bindir, $program;
-my $pidfile = join q{/}, $piddir, 'sipserver.pid';
+my $program    = 'sipserver.pl';
+my $piddir     = '/home/koha/koha-dev/var/run';
+my $bindir     = '/home/koha/kohaclone/C4/SIP';
+my $config_dir = '/home/koha/kohaclone/C4/SIP';
+my $server     = join q{/}, $bindir, $program;
+my $pidfile    = join q{/}, $piddir, 'sipserver.pid';
 my $server_pid;
 my $config_file = join q{/}, $config_dir, 'SIPTESTconfig.xml';
 
-if ($cmd ne 'start' ) {
+if ( $cmd ne 'start' ) {
     open my $fh, '<', $pidfile or die "Cannot read pid from $pidfile : $!";
     my $line = <$fh>;
     close $fh;
-    if ($line=~m/(\d+)/) {
+    if ( $line =~ m/(\d+)/ ) {
         $server_pid = $1;
     }
     else {
@@ -45,12 +47,11 @@ if ($cmd ne 'start' ) {
     }
 }
 
-&{$function{$cmd}}();
-
-
+&{ $function{$cmd} }();
 
 sub start_listener {
-    exec($server, $config_file) or print STDERR "Could not start $server for $config_file : $!";
+    exec( $server, $config_file )
+      or print STDERR "Could not start $server for $config_file : $!";
     return;
 }
 
