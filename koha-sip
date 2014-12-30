@@ -25,11 +25,16 @@ case "$1" in
       $SIPCTL stop
       ;;
     restart)
-      echo "Restarting the Zebra Server"
+      echo "Restarting the Sip Server"
       $SIPCTL restart
       ;;
+    force-reload)
+      echo "Reloading the Sip Server"
+      $SIPCTL stop
+      $SIPCTL start
+      ;;
     *)
-      echo "Usage: $0 {start|stop|restart}"
+      echo "Usage: $0 {start|stop|restart|force-reload}"
       exit 1
       ;;
 esac
