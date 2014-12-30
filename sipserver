@@ -9,8 +9,6 @@
 # Description:       Sipserver interface to koha.
 ### END INIT INFO
 
-PERL5LIB=/home/koha/kohaclone
-KOHA_CONF=/home/koha/koha-dev/etc/koha-conf.xml
 SIPCTL=/home/koha/koha-dev/bin/sipctl
 export PERL5LIB KOHA_CONF
 
