@@ -18,7 +18,7 @@ use Sip::MsgType;
 
 use base qw(Net::Server::Fork);
 
-use constant LOG_SIP => "local6";    # Local alias for the logging facility
+use constant LOG_SIP => 'local6';    # Local alias for the logging facility
 
 my %transports = (
     RAW    => \&raw_transport,
@@ -28,7 +28,7 @@ my %transports = (
 #
 # Read configuration
 #
-my $config = new Sip::Configuration $ARGV[0];
+my $config = Sip::Configuration->new( $ARGV[0] );
 my @parms;
 
 #
@@ -112,6 +112,7 @@ sub process_request {
     else {
         &$transport($self);
     }
+    return;
 }
 
 #
@@ -146,6 +147,7 @@ sub raw_transport {
 
     $self->sip_protocol_loop();
     syslog( "LOG_INFO", "raw_transport: shutting down" );
+    return;
 }
 
 sub get_clean_string {
@@ -246,6 +248,7 @@ sub telnet_transport {
         $account->{id}, $account->{institution} );
     $self->sip_protocol_loop();
     syslog( "LOG_INFO", "telnet_transport: shutting down" );
+    return;
 }
 
 #
@@ -310,6 +313,7 @@ sub sip_protocol_loop {
     if ( $@ =~ m/timed out/i ) {
         return;
     }
+    return;
 }
 
 sub read_request {
@@ -325,8 +329,9 @@ sub read_request {
         $raw_length = length $buffer;
         $buffer =~ s/^\s*[^A-z0-9]+//s
           ; # Every line must start with a "real" character.  Not whitespace, control chars, etc.
-        $buffer =~ s/[^A-z0-9]+$//s
-          ; # Same for the end.  Note this catches the problem some clients have sending empty fields at the end, like |||
+        $buffer =~ s/[^A-z0-9]+$//s;
+
+# Same for the end.  Note this catches the problem some clients have sending empty fields at the end, like |||
         $buffer =~ s/\015?\012//g;    # Extra line breaks must die
         $buffer =~ s/\015?\012//s;    # Extra line breaks must die
         $buffer =~ s/\015*\012*$//s;
