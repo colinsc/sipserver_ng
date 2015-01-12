@@ -1,0 +1,49 @@
+sipserver_ng === experimental Sip process for Koha
+
+files:
+
+sipserver.pl locate this in the same directory as SIPServer.pm
+( repo/C4/SIP in a dev install )
+This is the bin directory
+
+SIPTESTconfig.xml
+
+Sample configuration file
+
+Check this 
+Under server parameters ensure that the user, group and pid_file location are correct
+In listeners set the port you wish to use
+
+In accounts add the id/password/institution( branch) for all sip logins
+these should also be valid users in the database
+
+In institutions add an institution for every branch using sip
+
+Rename as e.g. SIP_config.xml and place in koha-dev/etc or elsewhere ( the conf directory)
+
+sipctl this is the controlling program, place it in your koha bin directory
+
+(misc/bin)
+
+edit sipctl the two $ENV entries should match koha's KOHA_CONF and PERL5LIB
+
+the config variables piddir, bindir, config_dir, pidfile and config_file should be made to match your layout
+
+sipctl start should start the sipserver
+sipctl stop should stop it
+sipctl restart causes it to refresh all listeners
+
+sipserver is a standard init script edit the variable SIPCTL and place in /etc/init.d
+
+-----
+
+As root run update-rc.d sipserver defaults
+ to run sipserver up on reboots
+
+in the syslog config files route local6 to /var/log/sip.log
+
+add sip.log to logrotate
+
+in /etc/csf/csf-config ensure that the sip port is open for incoming traffic on IPv4 and IPv6
+
+
