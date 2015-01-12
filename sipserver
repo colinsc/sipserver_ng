@@ -10,7 +10,6 @@
 ### END INIT INFO
 
 SIPCTL=/home/koha/koha-dev/bin/sipctl
-export PERL5LIB KOHA_CONF
 
 
 case "$1" in
