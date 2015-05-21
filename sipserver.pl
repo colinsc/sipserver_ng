@@ -101,6 +101,9 @@ sub process_request {
         die "process_request: Bad server connection";
     }
     syslog( 'LOG_INFO', "Connection on port:$port" );
+    if ( $self->{service}->{force_inst} ) {
+        $self->{overrideinst} = $self->{service}->{force_inst};
+    }
 
     $transport = $transports{ $self->{service}->{transport} };
 
@@ -138,6 +141,9 @@ sub raw_transport {
         }
         $input =~ s/[\r\n]+$//sm;    # Strip off trailing line terminator(s)
         last if Sip::MsgType::handle( $input, $self, LOGIN );
+    }
+    if ( $self->{overrideinst} ) {
+        $self->{account}->{institution} = $self->{overrideinst};
     }
 
     syslog(
@@ -241,6 +247,9 @@ sub telnet_transport {
     }
     else {
         print "Login OK.  Initiating SIP$CRLF";
+    }
+    if ( $self->{overrideinst} ) {
+        $self->{account}->{institution} = $self->{overrideinst};
     }
 
     $self->{account} = $account;
