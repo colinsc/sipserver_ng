@@ -11,10 +11,10 @@ use IO::Socket::INET;
 use Socket qw(:DEFAULT :crlf);
 require UNIVERSAL::require;
 
-use Sip::Constants qw(:all);
-use Sip::Configuration;
-use Sip::Checksum qw(checksum verify_cksum);
-use Sip::MsgType;
+use C4::SIP::Sip::Constants qw(:all);
+use C4::SIP::Sip::Configuration;
+use C4::SIP::Sip::Checksum qw(checksum verify_cksum);
+use C4::SIP::Sip::MsgType;
 
 use base qw(Net::Server::Fork);
 
@@ -28,7 +28,7 @@ my %transports = (
 #
 # Read configuration
 #
-my $config = Sip::Configuration->new( $ARGV[0] );
+my $config = C4::SIP::Sip::Configuration->new( $ARGV[0] );
 my @parms;
 
 #
@@ -137,7 +137,7 @@ sub raw_transport {
             return;
         }
         $input =~ s/[\r\n]+$//sm;    # Strip off trailing line terminator(s)
-        last if Sip::MsgType::handle( $input, $self, LOGIN );
+        last if C4::SIP::Sip::MsgType::handle( $input, $self, LOGIN );
     }
 
     syslog(
@@ -220,7 +220,7 @@ sub telnet_transport {
                 && ( $pwd eq $config->{accounts}->{$uid}->password() ) )
             {
                 $account = $config->{accounts}->{$uid};
-                Sip::MsgType::login_core( $self, $uid, $pwd ) and last;
+                C4::SIP::Sip::MsgType::login_core( $self, $uid, $pwd ) and last;
             }
             syslog(
                 "LOG_WARNING",
@@ -297,7 +297,7 @@ sub sip_protocol_loop {
             }
 
             # end cheap input hacks
-            my $status = Sip::MsgType::handle( $inputbuf, $self, q{} );
+            my $status = C4::SIP::Sip::MsgType::handle( $inputbuf, $self, q{} );
             if ( !$status ) {
                 syslog(
                     "LOG_ERR",
