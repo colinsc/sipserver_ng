@@ -14,7 +14,7 @@ require UNIVERSAL::require;
 use C4::SIP::Sip::Constants qw(:all);
 use C4::SIP::Sip::Configuration;
 use C4::SIP::Sip::Checksum qw(checksum verify_cksum);
-use C4::SIP::Sip::MsgType;
+use C4::SIP::Sip::MsgType qw( handle login_core );
 
 use base qw(Net::Server::Fork);
 
@@ -217,7 +217,7 @@ sub telnet_transport {
                 length($uid), length($pwd) );
 
             if ( exists( $config->{accounts}->{$uid} )
-                && ( $pwd eq $config->{accounts}->{$uid}->password() ) )
+                && ( $pwd eq $config->{accounts}->{$uid}->{password} ) )
             {
                 $account = $config->{accounts}->{$uid};
                 C4::SIP::Sip::MsgType::login_core( $self, $uid, $pwd ) and last;
