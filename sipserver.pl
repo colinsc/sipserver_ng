@@ -275,43 +275,28 @@ sub sip_protocol_loop {
     #
     # In short, we'll take any valid message here.
     #my $expect = SC_STATUS;
-    eval {
-        local $SIG{ALRM} = sub {
-            syslog( 'LOG_DEBUG', "Inactive timed out" );
-            die "Timed Out!\n";
-        };
-        my $timeout = 600;    # 10 mins
 
-        my $previous_alarm = alarm($timeout);
-
-        while ( my $inputbuf = read_request() ) {
-            if ( !defined $inputbuf ) {
-                return;       # EOF
-            }
-            alarm($timeout);
-
-            unless ($inputbuf) {
-                syslog( "LOG_ERR", "sip_protocol_loop: empty input skipped" );
-                print("96$CR");
-                next;
-            }
-
-            # end cheap input hacks
-            my $status = C4::SIP::Sip::MsgType::handle( $inputbuf, $self, q{} );
-            if ( !$status ) {
-                syslog(
-                    "LOG_ERR",
-                    "sip_protocol_loop: failed to handle %s",
-                    substr( $inputbuf, 0, 2 )
-                );
-            }
-            next if $status eq REQUEST_ACS_RESEND;
+    while ( my $inputbuf = read_request() ) {
+        if ( !defined $inputbuf ) {
+            return;       # EOF
         }
-        alarm($previous_alarm);
-        return;
-    };
-    if ( $@ =~ m/timed out/i ) {
-        return;
+
+        unless ($inputbuf) {
+            syslog( "LOG_ERR", "sip_protocol_loop: empty input skipped" );
+            print("96$CR");
+            next;
+        }
+
+        # end cheap input hacks
+        my $status = C4::SIP::Sip::MsgType::handle( $inputbuf, $self, q{} );
+        if ( !$status ) {
+            syslog(
+                "LOG_ERR",
+                "sip_protocol_loop: failed to handle %s",
+                substr( $inputbuf, 0, 2 )
+            );
+        }
+        next if $status eq REQUEST_ACS_RESEND;
     }
     return;
 }
