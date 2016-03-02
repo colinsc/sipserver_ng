@@ -18,8 +18,6 @@ use C4::SIP::Sip::MsgType qw( handle login_core );
 
 use base qw(Net::Server::Fork);
 
-use constant LOG_SIP => 'local6';    # Local alias for the logging facility
-
 my %transports = (
     RAW    => \&raw_transport,
     telnet => \&telnet_transport,
